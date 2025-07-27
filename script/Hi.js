@@ -3,7 +3,7 @@ module.exports.config = {
   version: "1.0.0",
   hasPermssion: 0,
   credits: "Sam",
-  usePrefix: true,
+  hasPrefix: false,
   description: "hi with sticker",
   commandCategory: "QTV BOX",
   usages: "[text]",
