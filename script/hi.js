@@ -27,12 +27,6 @@ module.exports.handleEvent = async ({ event, api, Users }) => {
   const message = event.body?.toLowerCase()?.trim();
   if (!message || !greetings.includes(message)) return;
 
-  const stickerList = [
-    "422812141688367", "1775288509378520", "476426593020937", "476420733021523",
-    "147663618749235", "466041158097347", "1528732074026137", "476426753020921",
-    "529233794205649", "1330360453820546"
-  ];
-
   const replies = [
     "have you eaten?", "what are you doing?", "how are you baby?",
     "I'm a chat bot, nice to meet you!", "I'm updating my commands, what are you doing?",
@@ -41,7 +35,6 @@ module.exports.handleEvent = async ({ event, api, Users }) => {
     "How are you, my dear?", "Eat some sweets!", "Are you ok?", "Be safe!"
   ];
 
-  const sticker = stickerList[Math.floor(Math.random() * stickerList.length)];
   const reply = replies[Math.floor(Math.random() * replies.length)];
   const name = await Users.getNameUser(event.senderID);
 
