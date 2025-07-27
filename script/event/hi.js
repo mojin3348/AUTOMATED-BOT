@@ -1,6 +1,3 @@
-const axios = require('axios')
-const fs = require('fs');
-
 module.exports.config = {
   name: "hi",
   version: "1.0.0",
