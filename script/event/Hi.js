@@ -3,8 +3,7 @@ const axios = require('axios')
 module.exports.config = {
   name: "hi",
   version: "1.0.0",
-  
-};
+  };
 
 module.exports.handleEvent = async ({ event, api, Users }) => {
   let KEY = [ 
