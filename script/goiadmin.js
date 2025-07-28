@@ -16,12 +16,12 @@ module.exports.handleEvent = async function ({ event, api }) {
   const matched = adminNames.some(name => nameCalled.includes(name));
   if (matched) {
     const responses = [
-      "tangina ano na naman kailangan mo sa owner ko?",
-      "wait mo lang boss, busy pa ata developer kong si ARI",
+      "tangina ano na naman kailangan mo sa owner ko? 🤨",
+      "wait mo lang boss, busy pa ata developer ko",
       "Yes? hanap mo pogi kong tropa?",
       "babe nalang itawag mo sa owner ko 😏😏",
       "wag isturbo may kabebetime pa owner ko.",
-      "isa pang tawag sa owner ko ipapa-laplap kita sa kanya",
+      "isa pang tawag sa owner ko ipapa-laplap kita sa kanya 🙄",
       "tawag nang tawag eh may kailangan ka ba sa boss ko? 😠😠",
       "anong kailangan mo sa boss ko⁉️"
     ];
