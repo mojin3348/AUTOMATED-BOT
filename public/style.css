@@ -16,41 +16,11 @@
   z-index: 1;
 }
 
-/* Your original styles below */
-
 body {
   margin: 0;
-  height: 100vh;
-  background: #000;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-/* Lightning line */
-.lightning-line {
-  width: 5px;
-  height: 300px;
-  background: linear-gradient(to bottom, #00f7ff, #ffffff, #00f7ff);
-  animation: flicker 0.1s infinite;
-  box-shadow: 0 0 20px #00f7ff, 0 0 40px #00f7ff, 0 0 60px #ffffff;
-  border-radius: 2px;
-}
-
-/* Flicker effect like lightning */
-@keyframes flicker {
-  0% {
-    opacity: 1;
-    box-shadow: 0 0 10px #00f7ff, 0 0 30px #00f7ff;
-  }
-  50% {
-    opacity: 0.6;
-    box-shadow: 0 0 40px #ffffff, 0 0 80px #00f7ff;
-  }
-  100% {
-    opacity: 1;
-    box-shadow: 0 0 20px #00f7ff, 0 0 50px #ffffff;
-  }
+  background-color: #1a001a;
+  color: #f2e6ff;
+  font-family: 'Poppins', sans-serif;
 }
 
 .header {
