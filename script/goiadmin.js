@@ -1,35 +1,35 @@
 module.exports.config = {
-	name: "goiadminn",
-	version: "1.0.0",
-	role: 0,
-	credits: "John Arida",
-	description: "Bot will rep ng tag admin or rep ng tagbot",
-	usages: "",
-	hasPrefix: true,
-	cooldown: 5
+  name: "goiadmin",
+  version: "1.0.0",
+  hasPermission: 0,
+  credits: "AJ/ARI",
+  description: "Auto reply kapag binanggit ang pangalan ng admin",
+  commandCategory: "autobot",
+  usages: "Automatic reply kapag tinawag si admin",
+  cooldowns: 2
 };
 
-module.exports.handleEvent = function({ api, event }) {
-	if (event.senderID !== "61577110900436" && event.mentions) {
-		var aid = ["61577110900436"];
-		for (const id of aid) {
-			if (event.mentions[id]) {
-				var msg = [
-					"Babe nalang itawag mo sakanya",
-					"Stop mentioning my creator, he's busy 😗",
-					"My Creator is currently offline 😢",
-					"𝖠𝗇𝗈𝗍𝗁𝖾𝗋 𝗍𝖺𝗀 𝗂𝗇 𝗆𝗒 𝖺𝖽𝗆𝗂𝗇, 𝗂 𝗐𝗂𝗅𝗅 𝗉𝗎𝗇𝖼𝗁 𝗒𝗈𝗎 🙂",
-					"busy pa ata yun kaya mag-antay ka",
-					"Sorry, naka bebetime pa don't disturb him 🙄",
-					"Do you like my creator thats why your tagging him? Why dont you add him https://www.facebook.com/61577110900436 😏",
-					" Another tag in my Creator, i will kick your fucking ass"
-				];
-				api.setMessageReaction("😍", event.messageID, (err) => {}, true);
-				return api.sendMessage({body: msg[Math.floor(Math.random()*msg.length)]}, event.threadID, event.messageID);
-			}
-		}
-	}
+module.exports.handleEvent = async function ({ event, api }) {
+  const nameCalled = event.body.toLowerCase();
+  const adminNames = ["Ari", "hoy ari", "ari", "ARI", "si ari", "asan si ari?", "nasaan si ari?"];
+
+  const matched = adminNames.some(name => nameCalled.includes(name));
+  if (matched) {
+    const responses = [
+      "tangina ano na naman kailangan mo sa owner ko?",
+      "wait mo lang boss, busy pa ata developer kong si ARI",
+      "Yes? hanap mo pogi kong tropa?",
+      "babe nalang itawag mo sa owner ko 😏😏",
+      "wag isturbo may kabebetime pa owner ko.",
+      "isa pang tawag sa owner ko ipapa-laplap kita sa kanya",
+      "tawag nang tawag eh may kailangan ka ba sa boss ko? 😠😠",
+      "anong kailangan mo sa boss ko⁉️"
+    ];
+    const randomReply = responses[Math.floor(Math.random() * responses.length)];
+    return api.sendMessage(randomReply, event.threadID, event.messageID);
+  }
 };
 
-module.exports.run = async function({}) {
+module.exports.run = async function () {
+  // No run needed, this command works on message events
 };
