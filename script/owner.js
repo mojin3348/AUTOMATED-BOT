@@ -7,13 +7,13 @@ module.exports.config = {
   version: "1.0.0",
   permission: 0,
   credits: "AJ Chicano",
-  description: "Show info about the bot owner and send a video",
+  description: "Send owner information with video",
   category: "info",
   usages: "/owner",
-  cooldowns: 5
+  cooldowns: 5,
 };
 
-const videoLinks = [
+const videos = [
   "https://i.imgur.com/9LDVC57.mp4",
   "https://i.imgur.com/r7IxgiR.mp4",
   "https://i.imgur.com/J1jWubu.mp4",
@@ -27,38 +27,44 @@ const videoLinks = [
 ];
 
 module.exports.run = async function ({ api, event }) {
-  const videoUrl = videoLinks[Math.floor(Math.random() * videoLinks.length)];
-  const fileName = path.join(__dirname, "owner_video.mp4");
+  const videoURL = videos[Math.floor(Math.random() * videos.length)];
+  const filePath = path.join(__dirname, "owner_video.mp4");
 
   try {
-    const response = await axios.get(videoUrl, { responseType: "stream" });
-    const writer = fs.createWriteStream(fileName);
+    const response = await axios({
+      method: "GET",
+      url: videoURL,
+      responseType: "stream",
+    });
+
+    const writer = fs.createWriteStream(filePath);
     response.data.pipe(writer);
 
     writer.on("finish", () => {
       const message = {
-        body: `👑 𝗕𝗢𝗧 𝗢𝗪𝗡𝗘𝗥 𝗜𝗡𝗙𝗢 👑
+        body: `👑 𝗢𝗪𝗡𝗘𝗥 𝗜𝗡𝗙𝗢 👑
 
-• Name: ARI
-• Developer: AutoBot PH Team
-• Role: Main Bot Dev / RPW Script Maker
-• Contact: https://www.facebook.com/profile.php?id=61577110900436
+🔹 Name: ARI
+🔹 Developer: AutoBot PH
+🔹 Role: RPW Script Maker / Lead Dev
+🔹 Facebook: https://www.facebook.com/61577110900436
+🔹 Status: Always Active 😎
 
-💬 Need help? Just message me!`,
-        attachment: fs.createReadStream(fileName)
+📽️ Here's a short message from the owner!`,
+        attachment: fs.createReadStream(filePath),
       };
 
       api.sendMessage(message, event.threadID, () => {
-        fs.unlinkSync(fileName); // delete file after sending
+        fs.unlinkSync(filePath); // Clean up after sending
       });
     });
 
     writer.on("error", (err) => {
-      console.error("Download error:", err);
-      api.sendMessage("❌ Failed to download the video.", event.threadID);
+      console.error("Failed to write video file:", err);
+      api.sendMessage("❌ Error saving the video file.", event.threadID);
     });
-  } catch (error) {
-    console.error("Request failed:", error);
-    api.sendMessage("❌ An error occurred while processing your request.", event.threadID);
+  } catch (err) {
+    console.error("Video download failed:", err);
+    api.sendMessage("❌ Failed to load the video. Please try again.", event.threadID);
   }
 };
