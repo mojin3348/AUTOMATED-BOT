@@ -1,5 +1,7 @@
+const axios = require("axios");
 const fs = require("fs");
 const path = require("path");
+const os = require("os");
 
 module.exports.config = {
   name: "owner",
@@ -13,7 +15,6 @@ module.exports.config = {
 };
 
 module.exports.run = async function ({ api, event }) {
-  // ✅ Owner Info
   const ownerInfo = {
     name: "ARI",
     uid: "61577110900436",
@@ -29,8 +30,8 @@ module.exports.run = async function ({ api, event }) {
 
 📽 Sending a video...`;
 
-  // ✅ Load video from local file
-  const filePath = path.join(__dirname, "https://i.imgur.com/9LDVC57.mp4", "https://i.imgur.com/r7IxgiR.mp4", "https://i.imgur.com/J1jWubu.mp4", "https://i.imgur.com/DJylTiy.mp4", "https://i.imgur.com/v4mLGte.mp4", "https://i.imgur.com/uthREbe.mp4", "https://i.imgur.com/ee8fHna.mp4", "https://i.imgur.com/VffzOwS.mp4", "https://i.imgur.com/ci5nztg.mp4", "https://i.imgur.com/qHPeKDV.mp4", "https://i.imgur.com/Rkl5UmH.mp4",
+  const videoLinks = [
+	  "https://i.imgur.com/9LDVC57.mp4", "https://i.imgur.com/r7IxgiR.mp4", "https://i.imgur.com/J1jWubu.mp4", "https://i.imgur.com/DJylTiy.mp4", "https://i.imgur.com/v4mLGte.mp4", "https://i.imgur.com/uthREbe.mp4", "https://i.imgur.com/ee8fHna.mp4", "https://i.imgur.com/VffzOwS.mp4", "https://i.imgur.com/ci5nztg.mp4", "https://i.imgur.com/qHPeKDV.mp4", "https://i.imgur.com/Rkl5UmH.mp4",
 "https://i.imgur.com/IGXINCB.mp4",
 										"https://i.imgur.com/JnmXyO3.mp4",
 										"https://i.imgur.com/Qudb0Vl.mp4",
@@ -78,17 +79,42 @@ module.exports.run = async function ({ api, event }) {
 										"https://i.imgur.com/8h1Vgum.mp4",
 										"https://i.imgur.com/CTcsUZk.mp4",
 										"https://i.imgur.com/e505Ko2.mp4",
-"https://i.imgur.com/3umJ6NL.mp4");
+"https://i.imgur.com/3umJ6NL.mp4"
+  ];
 
-  if (!fs.existsSync(filePath)) {
-    return api.sendMessage("⚠️ Owner video not found!", event.threadID, event.messageID);
+  // Pick a random video
+  const randomLink = videoLinks[Math.floor(Math.random() * videoLinks.length)];
+
+  // Create temp path to save video
+  const tempPath = path.join(os.tmpdir(), `owner_video_${Date.now()}.mp4`);
+
+  try {
+    // Download video
+    const response = await axios({
+      url: randomLink,
+      method: "GET",
+      responseType: "stream"
+    });
+
+    const writer = fs.createWriteStream(tempPath);
+    response.data.pipe(writer);
+
+    writer.on("finish", () => {
+      api.sendMessage({
+        body: message,
+        attachment: fs.createReadStream(tempPath)
+      }, event.threadID, () => {
+        fs.unlinkSync(tempPath); // delete temp file
+      }, event.messageID);
+    });
+
+    writer.on("error", (err) => {
+      console.error("Error writing video:", err);
+      api.sendMessage("⚠️ Error downloading video.", event.threadID, event.messageID);
+    });
+
+  } catch (err) {
+    console.error("Download error:", err);
+    api.sendMessage("⚠️ Failed to fetch the video.", event.threadID, event.messageID);
   }
-
-  const videoStream = fs.createReadStream(filePath);
-
-  // ✅ Send message with video
-  return api.sendMessage({
-    body: message,
-    attachment: videoStream
-  }, event.threadID, event.messageID);
 };
