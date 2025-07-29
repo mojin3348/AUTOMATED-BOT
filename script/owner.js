@@ -6,7 +6,7 @@ module.exports.config = {
   name: "owner",
   version: "1.1.0",
   permission: 0,
-  credits: "AJ Chicano",
+  credits: "AJ/ARI",
   description: "Display bot owner info with multiple videos",
   category: "info",
   usages: "/owner",
@@ -15,7 +15,17 @@ module.exports.config = {
 
 module.exports.run = async function ({ api, event }) {
   const videoUrls = [
-    "https://files.catbox.moe/eksnob.mp4"
+    "https://files.catbox.moe/eksnob.mp4",
+    "https://files.catbox.moe/l27lu3.mp4",
+    "https://files.catbox.moe/4sh4f2.mp4",
+    "https://files.catbox.moe/af5o24.mp4",
+    "https://files.catbox.moe/i1sfb7.mp4",
+    "https://files.catbox.moe/tiygtc.mp4",
+    "https://files.catbox.moe/pxn6ri.mp4",
+    "https://files.catbox.moe/93flm8.mp4",
+    "https://files.catbox.moe/ogjrsp.mp4",
+    "https://files.catbox.moe/c7iby8.mp4",
+    "https://files.catbox.moe/9x5sy4.mp4"
   ];
 
   const videoPaths = [];
@@ -43,13 +53,13 @@ module.exports.run = async function ({ api, event }) {
     // Send message
     const message = {
       body: `
-👑 BOT OWNER INFO 👑
-
-👤 Name: ARI
-🌐 FACEBOOK: https://www.facebook.com/61577110900436
-📍 Location: Philippines
-🤖 Bot Name: AutoBot v1.0
-📅 Active Since: 2024
+      👑 𝗕𝗢𝗧 𝗢𝗪𝗡𝗘𝗥 𝗜𝗡𝗙𝗢 👑   ━━━━━━━━━━━━━━━━ 
+🧑‍🔧 𝗡𝗔𝗠𝗘: ᴀʀɪ  
+📎 𝗔𝗚𝗘: 18 
+🧍𝗚𝗘𝗡𝗗𝗘𝗥: ᴍᴀʟᴇ  
+⚙️ 𝗥𝗢𝗟𝗘: ʟᴇᴀᴅ ᴅᴇᴠᴇʟᴏᴘᴇʀ ᴏꜰ ᴀᴜᴛᴏʙᴏᴛ 
+🤖 𝗕𝗢𝗧 𝗩𝗘𝗥𝗦𝗜𝗢𝗡: 1.0 
+💬 𝗡𝗢𝗧𝗘: ɪ'ᴍ ᴏᴘᴇɴ ᴛᴏ ꜱᴜɢɢᴇꜱᴛɪᴏɴꜱ ᴀɴᴅ ɪᴍᴘʀᴏᴠᴇᴍᴇɴᴛꜱ, ᴘᴍ ᴍᴇ ꜰᴏʀ ʜᴇʟᴘ ᴏʀ ʙᴏᴛ ᴄᴏʟʟᴀʙᴏʀᴀᴛɪᴏɴ . ━━━━━━━━━━━━━━━━
 
 📽 Sending multiple video files...`,
       attachment: attachments
