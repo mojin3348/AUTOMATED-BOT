@@ -21,7 +21,7 @@ const ERROR_RETRIEVING = "Error retrieving userID. This can be caused by many fa
 async function setOptions(options = {}) {
   const optionHandlers = {
     online: (value) => (globalOptions.online = Boolean(value)),
-    selfListen: (false) => (globalOptions.selfListen = false),
+    selfListen: (value) => (globalOptions.selfListen = Boolean (value)),
     selfListenEvent: (value) => (globalOptions.selfListenEvent = value),
     listenEvents: (value) => (globalOptions.listenEvents = Boolean(value)),
     updatePresence: (value) => (globalOptions.updatePresence = Boolean(value)),
