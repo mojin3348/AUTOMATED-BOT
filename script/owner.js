@@ -4,67 +4,65 @@ const path = require("path");
 
 module.exports.config = {
   name: "owner",
-  version: "1.0.0",
+  version: "1.1.0",
   permission: 0,
   credits: "AJ Chicano",
-  description: "Send owner information with video",
+  description: "Display bot owner info with multiple videos",
   category: "info",
   usages: "/owner",
-  cooldowns: 5,
+  cooldowns: 5
 };
 
-const videos = [
-  "https://i.imgur.com/9LDVC57.mp4",
-  "https://i.imgur.com/r7IxgiR.mp4",
-  "https://i.imgur.com/J1jWubu.mp4",
-  "https://i.imgur.com/v4mLGte.mp4",
-  "https://i.imgur.com/qHPeKDV.mp4",
-  "https://i.imgur.com/ViP4uvu.mp4",
-  "https://i.imgur.com/Xf6HVcA.mp4",
-  "https://i.imgur.com/ySu69zS.mp4",
-  "https://i.imgur.com/ApOSepp.mp4",
-  "https://i.imgur.com/dYLBspd.mp4"
-];
-
 module.exports.run = async function ({ api, event }) {
-  const videoURL = videos[Math.floor(Math.random() * videos.length)];
-  const filePath = path.join(__dirname, "owner_video.mp4");
+  const videoUrls = [
+    "https://i.imgur.com/9LDVC57.mp4",
+    "https://i.imgur.com/r7IxgiR.mp4",
+    "https://i.imgur.com/J1jWubu.mp4"
+  ];
+
+  const videoPaths = [];
 
   try {
-    const response = await axios({
-      method: "GET",
-      url: videoURL,
-      responseType: "stream",
-    });
+    // Download all videos
+    for (let i = 0; i < videoUrls.length; i++) {
+      const videoUrl = videoUrls[i];
+      const filePath = path.join(__dirname, "cache", `owner_video_${i}.mp4`);
+      const response = await axios({ url: videoUrl, method: "GET", responseType: "stream" });
 
-    const writer = fs.createWriteStream(filePath);
-    response.data.pipe(writer);
-
-    writer.on("finish", () => {
-      const message = {
-        body: `👑 𝗢𝗪𝗡𝗘𝗥 𝗜𝗡𝗙𝗢 👑
-
-🔹 Name: ARI
-🔹 Developer: AutoBot PH
-🔹 Role: RPW Script Maker / Lead Dev
-🔹 Facebook: https://www.facebook.com/61577110900436
-🔹 Status: Always Active 😎
-
-📽️ Here's a short message from the owner!`,
-        attachment: fs.createReadStream(filePath),
-      };
-
-      api.sendMessage(message, event.threadID, () => {
-        fs.unlinkSync(filePath); // Clean up after sending
+      await new Promise((resolve, reject) => {
+        const writer = fs.createWriteStream(filePath);
+        response.data.pipe(writer);
+        writer.on("finish", resolve);
+        writer.on("error", reject);
       });
-    });
 
-    writer.on("error", (err) => {
-      console.error("Failed to write video file:", err);
-      api.sendMessage("❌ Error saving the video file.", event.threadID);
-    });
-  } catch (err) {
-    console.error("Video download failed:", err);
-    api.sendMessage("❌ Failed to load the video. Please try again.", event.threadID);
+      videoPaths.push(filePath);
+    }
+
+    // Create attachment array
+    const attachments = videoPaths.map((file) => fs.createReadStream(file));
+
+    // Send message
+    const message = {
+      body: `
+👑 BOT OWNER INFO 👑
+
+👤 Name: ARI
+🌐 FACEBOOK: https://www.facebook.com/61577110900436
+📍 Location: Philippines
+🤖 Bot Name: AutoBot v1.0
+📅 Active Since: 2024
+
+📽 Sending multiple video files...`,
+      attachment: attachments
+    };
+
+    api.sendMessage(message, event.threadID, () => {
+      // Delete all videos after sending
+      videoPaths.forEach((file) => fs.unlinkSync(file));
+    }, event.messageID);
+  } catch (error) {
+    console.error("❌ Error downloading videos:", error);
+    api.sendMessage("❌ Failed to send videos. Please check the video links or try again later.", event.threadID, event.messageID);
   }
 };
