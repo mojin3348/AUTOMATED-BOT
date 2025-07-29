@@ -15,9 +15,7 @@ module.exports.config = {
 
 module.exports.run = async function ({ api, event }) {
   const videoUrls = [
-    "https://i.imgur.com/9LDVC57.mp4",
-    "https://i.imgur.com/r7IxgiR.mp4",
-    "https://i.imgur.com/J1jWubu.mp4"
+    "https://files.catbox.moe/eksnob.mp4"
   ];
 
   const videoPaths = [];
