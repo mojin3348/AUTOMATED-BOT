@@ -30,13 +30,17 @@ module.exports.run = async ({ api, event }) => {
       "https://files.catbox.moe/l27lu3.mp4",
       "https://files.catbox.moe/4sh4f2.mp4",
       "https://files.catbox.moe/af5o24.mp4",
+      "https://files.catbox.moe/mn42f8.mp4",
       "https://files.catbox.moe/i1sfb7.mp4",
       "https://files.catbox.moe/tiygtc.mp4",
       "https://files.catbox.moe/pxn6ri.mp4",
       "https://files.catbox.moe/93flm8.mp4",
       "https://files.catbox.moe/ogjrsp.mp4",
       "https://files.catbox.moe/c7iby8.mp4",
-      "https://files.catbox.moe/9x5sy4.mp4"
+      "https://files.catbox.moe/9x5sy4.mp4",
+      "https://files.catbox.moe/n9pzca.mp4",
+      "https://files.catbox.moe/ivse79.mp4",
+      "https://files.catbox.moe/apramu.mp4"
    ];
 
 		const chosenVideoUrl = videoUrl[Math.floor(Math.random() * videoUrl.length)];
