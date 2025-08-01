@@ -8,7 +8,7 @@ module.exports.config = {
 	hasPermision: 0,
 	credits: 'AJ Chicano',
 	usePrefix: false,
-	description: 'Send a random Red Room aesthetic video',
+	description: 'Send a random Red Room video',
 	commandCategory: 'aesthetic',
 	usages: '',
 	cooldowns: 5
@@ -17,7 +17,22 @@ module.exports.config = {
 module.exports.run = async ({ api, event }) => {
 	try {
 		const videoUrls = [
-			""
+			"https://files.catbox.moe/44jsle.mp4",
+			"https://files.catbox.moe/0ic5f9.mp4",
+			"https://files.catbox.moe/5mfwow.mp4",
+			"https://files.catbox.moe/c039x7.mp4",
+			"https://files.catbox.moe/kqge9z.mp4",
+			"https://files.catbox.moe/d2h7nz.mp4",
+			"https://files.catbox.moe/hp0av4.mp4"
+			"https://files.catbox.moe/g9qcr1.mp4",
+			"https://files.catbox.moe/itw6ix.mp4",
+			"https://files.catbox.moe/nfpc2v.mp4",
+			"https://files.catbox.moe/9ouwzd.mp4",
+			"https://files.catbox.moe/svisxu.mp4",
+			"https://files.catbox.moe/0vw7wh.mp4",
+			"https://files.catbox.moe/cyzs91.mp4",
+			"https://files.catbox.moe/gpjmmw.mp4",
+			"https://files.catbox.moe/qqse4t.mp4"		
 		];
 
 		const chosenVideoUrl = videoUrls[Math.floor(Math.random() * videoUrls.length)];
