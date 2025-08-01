@@ -1,56 +1,45 @@
-const axios = require("axios");
-const fs = require("fs");
-const path = require("path");
+const axios = require('axios');
+const fs = require('fs');
 
 module.exports.config = {
-  name: "join",
-  version: "1.0.0",
+    name: "welcome",
+    version: "1.0.0",
 };
 
 module.exports.handleEvent = async function ({ api, event }) {
-  if (event.logMessageType !== "log:subscribe") return;
+    if (event.logMessageType === "log:subscribe") {
+        const addedParticipants = event.logMessageData.addedParticipants;
+        const senderID = addedParticipants[0].userFbId;
+        let name = await api.getUserInfo(senderID).then(info => info[senderID].name);
 
-  const addedUsers = event.logMessageData.addedParticipants;
-  const threadID = event.threadID;
+        // Truncate name if it's too long
+        const maxLength = 15;
+        if (name.length > maxLength) {
+            name = name.substring(0, maxLength - 3) + '...';
+        }
 
-  try {
-    const threadInfo = await api.getThreadInfo(threadID);
-    const groupName = threadInfo.threadName || "this group";
-    const memberCount = threadInfo.participantIDs.length;
+        const groupInfo = await api.getThreadInfo(event.threadID);
+        const groupIcon = groupInfo.imageSrc || "https://i.ibb.co/G5mJZxs/rin.jpg";
+        const memberCount = groupInfo.participantIDs.length;
+        const groupName = groupInfo.threadName || "this group";
+        const background = groupInfo.imageSrc || "https://i.ibb.co/4YBNyvP/images-76.jpg";
 
-    for (const user of addedUsers) {
-      const userID = user.userFbId;
-      const firstName = user.fullName;
+        const url = `https://join2apibyjonell-7b4fde8396f3.herokuapp.com/join2?name=${encodeURIComponent(firstName)}&id=${userID}&background=${encodeURIComponent(background)}&count=${memberCount}`;
 
-      // Background image – you can change this
-      const background = "https://i.imgur.com/zv3FMpH.jpeg";
+        try {
+            const { data } = await axios.get(url, { responseType: 'arraybuffer' });
+            const filePath = './script/cache/welcome_image.jpg';
+            fs.writeFileSync(filePath, Buffer.from(data));
 
-      // Generate welcome image URL
-      const imageUrl = `https://join2apibyjonell-7b4fde8396f3.herokuapp.com/join2?name=${encodeURIComponent(firstName)}&id=${userID}&background=${encodeURIComponent(background)}&count=${memberCount}`;
-
-      // Download welcome image
-      const response = await axios.get(imageUrl, { responseType: "arraybuffer" });
-      const imagePath = path.join(__dirname, "cache", `welcome_${userID}.png`);
-      fs.writeFileSync(imagePath, Buffer.from(response.data, "binary"));
-
-      // Build welcome message
-      const welcomeMessage = {
-        body:
-          `👋 Welcome, ${firstName}!\n` +
-          `🏘️ Group: ${groupName}\n` +
-          `🔢 You're member #${memberCount}\n\n` +
-          `📌 Please read the group rules and enjoy your stay!`,
-        attachment: fs.createReadStream(imagePath)
-      };
-
-      // Send message
-      await api.sendMessage(welcomeMessage, threadID);
-      fs.unlinkSync(imagePath); // Clean up
+            api.sendMessage({
+                body: `Everyone welcome the new member ${name} to ${groupName}!`,
+                attachment: fs.createReadStream(filePath)
+            }, event.threadID, () => fs.unlinkSync(filePath));
+        } catch (error) {
+            console.error("Error fetching welcome image:", error);
+            api.sendMessage({
+                body: `Everyone welcome the new member ${name} to ${groupName}!`
+            }, event.threadID);
+        }
     }
-  } catch (error) {
-    console.error("❌ Error in welcome event:", error);
-    api.sendMessage("❌ An error occurred while sending the welcome message.", threadID);
-  }
 };
-
-module.exports.run = async () => {};
