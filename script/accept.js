@@ -1,100 +1,50 @@
-const moment = require("moment-timezone");
+const axios = require("axios");
 
-let autoAccept = true;
+let autoAccept = false;
 
 module.exports.config = {
   name: "accept",
   version: "1.0.0",
-  hasPermssion: 2,
-  credits: "ARI • Fixed & Converted by AJ Chicano",
-  description: "Auto-accepts pending friend requests on the bot account",
+  hasPermission: 2, 
+  credits: "AJ Chicano",
+  description: "Toggle auto-accept friend requests",
   commandCategory: "admin",
   usages: "[on/off]",
   cooldowns: 5,
 };
 
 module.exports.run = async function ({ api, event, args }) {
-  const userID = api.getCurrentUserID?.() || global.GoatBot?.config?.UID;
+  const { threadID, messageID } = event;
+  const input = args[0]?.toLowerCase();
 
-  if (!userID)
-    return api.sendMessage("❌ Unable to fetch bot user ID.", event.threadID, event.messageID);
-
-  if (args[0]?.toLowerCase() === "on") {
-    autoAccept = true;
-    return api.sendMessage("✅ Auto-accept has been turned ON.", event.threadID, event.messageID);
-  } else if (args[0]?.toLowerCase() === "off") {
-    autoAccept = false;
-    return api.sendMessage("❌ Auto-accept has been turned OFF.", event.threadID, event.messageID);
+  if (!["on", "off"].includes(input)) {
+    return api.sendMessage(
+      `⚙️ Usage: ${global.config.PREFIX}accept [on/off]`,
+      threadID,
+      messageID
+    );
   }
 
-  if (!autoAccept) {
-    return api.sendMessage("⚠️ Auto-accept is OFF. Use `accept on` to enable it.", event.threadID, event.messageID);
-  }
+  autoAccept = input === "on";
+  return api.sendMessage(
+    `✅ Auto-accept friend requests is now ${autoAccept ? "enabled" : "disabled"}.`,
+    threadID,
+    messageID
+  );
+};
+
+module.exports.handleEvent = async function ({ api, event }) {
+  if (!autoAccept) return;
 
   try {
-    const formData = {
-      av: userID,
-      fb_api_req_friendly_name: "FriendingCometFriendRequestsRootQueryRelayPreloader",
-      fb_api_caller_class: "RelayModern",
-      doc_id: "4499164963466303",
-      variables: JSON.stringify({ input: { scale: 3 } }),
-    };
+    const list = await api.getFriendsList();
+    const pendingRequests = list.filter(user => user.isFriend === false);
 
-    const headers = {
-      "Content-Type": "application/x-www-form-urlencoded",
-    };
-
-    const response = await axios.post(
-      "https://www.facebook.com/api/graphql/",
-      new URLSearchParams(formData),
-      { headers }
-    );
-
-    const edges = response.data?.data?.viewer?.friending_possibilities?.edges || [];
-
-    if (!edges.length)
-      return api.sendMessage("⚠️ No pending friend requests found.", event.threadID, event.messageID);
-
-    const success = [], failed = [];
-
-    for (const { node } of edges) {
-      const confirmData = {
-        av: userID,
-        fb_api_req_friendly_name: "FriendingCometFriendRequestConfirmMutation",
-        doc_id: "1472456629576662",
-        variables: JSON.stringify({
-          input: {
-            friend_requester_id: node.id,
-            action: "confirm"
-          }
-        }),
-      };
-
-      try {
-        const confirm = await axios.post(
-          "https://www.facebook.com/api/graphql/",
-          new URLSearchParams(confirmData),
-          { headers }
-        );
-
-        if (!confirm.data?.errors) {
-          success.push(node.name);
-        } else {
-          failed.push(node.name);
-        }
-      } catch (e) {
-        failed.push(node.name);
-      }
+    for (const user of pendingRequests) {
+      await api.acceptFriendRequest(user.userID);
+      console.log(`✅ Accepted request from ${user.fullName} (${user.userID})`);
     }
-
-    return api.sendMessage(
-      `✅ Accepted ${success.length} request(s):\n${success.join("\n")}` +
-      (failed.length ? `\n❌ Failed ${failed.length}:\n${failed.join("\n")}` : ""),
-      event.threadID,
-      event.messageID
-    );
   } catch (err) {
-    console.error("AutoAccept Error:", err.message);
-    return api.sendMessage("❌ Something went wrong while processing friend requests.", event.threadID, event.messageID);
+    console.error("❌ Error accepting friend requests:", err);
   }
 };
