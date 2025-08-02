@@ -1,50 +1,44 @@
 const axios = require("axios");
 
-let autoAccept = false;
+let autoAccept = true;
 
 module.exports.config = {
   name: "accept",
   version: "1.0.0",
-  hasPermission: 2, 
-  credits: "AJ Chicano",
-  description: "Toggle auto-accept friend requests",
+  hasPermission: 2,
+  credits: "ChatGPT • Modified by AJ Chicano",
+  description: "Auto accept pending friend requests",
   commandCategory: "admin",
   usages: "[on/off]",
   cooldowns: 5,
 };
 
 module.exports.run = async function ({ api, event, args }) {
-  const { threadID, messageID } = event;
-  const input = args[0]?.toLowerCase();
+  const input = args[0];
 
-  if (!["on", "off"].includes(input)) {
-    return api.sendMessage(
-      `⚙️ Usage: ${global.config.PREFIX}accept [on/off]`,
-      threadID,
-      messageID
-    );
+  if (input === "on") {
+    autoAccept = true;
+    return api.sendMessage("✅ Auto accept is now ON. The bot will accept friend requests automatically.", event.threadID);
+  } else if (input === "off") {
+    autoAccept = false;
+    return api.sendMessage("❌ Auto accept is now OFF.", event.threadID);
+  } else {
+    return api.sendMessage("❓ Usage: accept [on/off]", event.threadID);
   }
-
-  autoAccept = input === "on";
-  return api.sendMessage(
-    `✅ Auto-accept friend requests is now ${autoAccept ? "enabled" : "disabled"}.`,
-    threadID,
-    messageID
-  );
 };
 
-module.exports.handleEvent = async function ({ api, event }) {
+module.exports.handleEvent = async function ({ api }) {
   if (!autoAccept) return;
 
   try {
-    const list = await api.getFriendsList();
-    const pendingRequests = list.filter(user => user.isFriend === false);
+    const friends = await api.getFriendsList();
+    const pending = friends.filter(f => f.isFriend === false);
 
-    for (const user of pendingRequests) {
+    for (const user of pending) {
       await api.acceptFriendRequest(user.userID);
-      console.log(`✅ Accepted request from ${user.fullName} (${user.userID})`);
+      console.log(`🤝 Accepted: ${user.fullName}`);
     }
-  } catch (err) {
-    console.error("❌ Error accepting friend requests:", err);
+  } catch (error) {
+    console.error("❌ Error while accepting friend requests:", error);
   }
 };
