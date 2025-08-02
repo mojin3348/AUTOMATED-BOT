@@ -1,58 +1,80 @@
-const axios = require("axios");
 const fs = require("fs");
-const path = require("path");
+const axios = require("axios");
+const moment = require("moment"); 
 
 module.exports.config = {
-  name: "welcome",
-  version: "1.0.0",
+    name: "join",
+    eventType: ['log:subscribe'],
+    version: "1.0.0",
+    credits: "Mirai-Team", // mod by Jonell Magallanes 
+    description: "GROUP UPDATE NOTIFICATION"
 };
 
-module.exports.handleEvent = async function ({ api, event }) {
-  if (event.logMessageType !== "log:subscribe") return;
-
-  const threadID = event.threadID;
-  const addedParticipants = event.logMessageData.addedParticipants;
-
-  try {
-    const threadInfo = await api.getThreadInfo(threadID);
-    const groupName = threadInfo.threadName || "this group";
-    const memberCount = threadInfo.participantIDs.length;
-
-    for (const user of addedParticipants) {
-      const userID = user.userFbId;
-      const userName = user.fullName;
-      const firstName = userName.split(" ")[0];
-
-      const background = "https://i.imgur.com/Ir3xU9A.jpg"; // You can customize this background
-
-      // Build API link
-      const imageURL = ``;
-      const filePath = path.join(__dirname, "cache", `welcome_${userID}.jpg`);
-
-      try {
-        // Fetch welcome image
-        const response = await axios.get(imageURL, { responseType: "arraybuffer" });
-        fs.writeFileSync(filePath, Buffer.from(response.data, "binary"));
-
-        // Send welcome message with image
-        await api.sendMessage({
-          body: `👋 Welcome ${userName}!\nYou're now a member of "${groupName}".\n🎉 Member count: ${memberCount}`,
-          attachment: fs.createReadStream(filePath)
-        }, threadID);
-
-        // Clean up temp file
-        fs.unlinkSync(filePath);
-      } catch (err) {
-        console.error("⚠️ Error downloading/sending welcome image:", err.message);
-        await api.sendMessage({
-          body: `👋 Welcome ${userName}!\nYou're now a member of "${groupName}".\n🎉 Member count: ${memberCount}\n⚠️ (Image failed to load)`
-        }, threadID);
-      }
+module.exports.run = async function ({ api, event, Users, Threads }) {
+    function reply(data) {
+        api.sendMessage(data, event.threadID, event.messageID);
     }
-  } catch (err) {
-    console.error("❌ Error processing join event:", err.message);
-    await api.sendMessage("❌ Error handling welcome event.", threadID);
-  }
-};
 
-module.exports.run = () => {};
+    if (event.logMessageData.addedParticipants.some(i => i.userFbId == api.getCurrentUserID())) {
+        api.changeNickname(`${global.config.BOTNAME} • [ ${global.config.PREFIX} ]`, event.threadID, api.getCurrentUserID());
+        return reply(`✅ | ${global.config.BOTNAME} connected successfully!\nType "${global.config.PREFIX}help" to view all commands\n\nContact the admin if you encounter an error.\n\n👷Developer: [Ari]`);
+    } else {
+        try {
+            const {
+                threadID
+            } = event;
+            let {
+                threadName,
+                participantIDs
+            } = await api.getThreadInfo(threadID);
+            var tn = threadName || "Unnamed group";
+            var mentions = [],
+                nameArray = [],
+                i = 0;
+            let addedParticipants1 = event.logMessageData.addedParticipants;
+
+            for (let newParticipant of addedParticipants1) {
+                let userID = newParticipant.userFbId;
+                let senderID = newParticipant.userFbId; 
+                api.getUserInfo(parseInt(userID), (err, data) => {
+                    if (err) {
+                        return console.log(err);
+                    }
+                    var obj = Object.keys(data);
+                    var firstName = data[obj].firstName;
+                    var userName = data[obj].name.replace("@", "");
+
+                    if (userID !== api.getCurrentUserID()) {
+                        nameArray.push(userName);
+                        mentions.push({
+                            tag: userName,
+                            id: userID,
+                            fromIndex: 0
+                        });
+                        let avt = ["https://i.postimg.cc/pTGHDKnY/images-2023-08-19-T230758-444.jpg", "https://i.postimg.cc/pd0WBwwF/images-2023-08-19-T230807-555.jpg", "https://i.postimg.cc/gkvG7L9d/images-2023-08-19-T230828-578.jpg", "https://i.postimg.cc/XNfXtYyf/images-2023-08-19-T230845-301.jpg"];
+                        var avt1 = avt[Math.floor(Math.random() * avt.length)];
+
+                        let firstName = nameArray[0].split(" ")[0];
+
+                        let requestURL = `https://join2apibyjonell-7b4fde8396f3.herokuapp.com/join2?name=${firstName}&id=${senderID}&background=${avt1}&count=${participantIDs.length}`;
+
+                        axios.get(encodeURI(requestURL), { responseType: 'arraybuffer' })
+                            .then(response => {
+                                fs.writeFileSync(`come.jpg`, Buffer.from(response.data, 'binary'));
+                                let welcomeText = `Hello ${userName}!\nWelcome to ${tn}\nYou're the ${participantIDs.length}th member on this group. Enjoy!`;
+
+                                return reply({
+                                    body: welcomeText,
+                                    attachment: fs.createReadStream(`come.jpg`),
+                                    mentions
+                                }, () => fs.unlinkSync(`come.jpg`));
+                            })
+                            .catch(error => console.log("Axios Error: ", error));
+                    }
+                })
+            }
+        } catch (err) {
+            return console.log("ERROR: " + err);
+        }
+    }
+};
