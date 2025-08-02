@@ -3,44 +3,55 @@ const fs = require("fs");
 const path = require("path");
 
 module.exports.config = {
-  name: "join",
+  name: "welcome",
   version: "1.0.0",
 };
 
 module.exports.handleEvent = async function ({ api, event }) {
   if (event.logMessageType !== "log:subscribe") return;
 
-  const addedParticipants = event.logMessageData.addedParticipants;
   const threadID = event.threadID;
-  const threadInfo = await api.getThreadInfo(threadID);
-  const groupName = threadInfo.threadName || "this group";
-  const memberCount = threadInfo.participantIDs.length;
+  const addedParticipants = event.logMessageData.addedParticipants;
 
-  for (let user of addedParticipants) {
-    const userID = user.userFbId;
-    const userName = user.fullName;
+  try {
+    const threadInfo = await api.getThreadInfo(threadID);
+    const groupName = threadInfo.threadName || "this group";
+    const memberCount = threadInfo.participantIDs.length;
 
-    const firstName = userName.split(" ")[0];
-    const background = "https://i.imgur.com/Ir3xU9A.jpg"; // Change to your desired background
+    for (const user of addedParticipants) {
+      const userID = user.userFbId;
+      const userName = user.fullName;
+      const firstName = userName.split(" ")[0];
 
-    try {
+      const background = "https://i.imgur.com/Ir3xU9A.jpg"; // You can customize this background
+
+      // Build API link
       const imageURL = `https://join2apibyjonell-7b4fde8396f3.herokuapp.com/join2?name=${encodeURIComponent(firstName)}&id=${userID}&background=${encodeURIComponent(background)}&count=${memberCount}`;
-      const response = await axios.get(imageURL, { responseType: "arraybuffer" });
+      const filePath = path.join(__dirname, "cache", `welcome_${userID}.jpg`);
 
-      const imagePath = path.join(__dirname, "cache", `welcome_${userID}.jpg`);
-      fs.writeFileSync(imagePath, Buffer.from(response.data, "binary"));
+      try {
+        // Fetch welcome image
+        const response = await axios.get(imageURL, { responseType: "arraybuffer" });
+        fs.writeFileSync(filePath, Buffer.from(response.data, "binary"));
 
-      const message = {
-        body: `👋 Welcome ${userName}!\n\nYou are now a member of "${groupName}" 🎉\nYou're member #${memberCount}!`,
-        attachment: fs.createReadStream(imagePath),
-      };
+        // Send welcome message with image
+        await api.sendMessage({
+          body: `👋 Welcome ${userName}!\nYou're now a member of "${groupName}".\n🎉 Member count: ${memberCount}`,
+          attachment: fs.createReadStream(filePath)
+        }, threadID);
 
-      await api.sendMessage(message, threadID);
-      fs.unlinkSync(imagePath); // Clean up after sending
-    } catch (error) {
-      console.error("Error sending welcome message:", error);
-      api.sendMessage(`❌ Failed to send welcome image for ${userName}.`, threadID);
+        // Clean up temp file
+        fs.unlinkSync(filePath);
+      } catch (err) {
+        console.error("⚠️ Error downloading/sending welcome image:", err.message);
+        await api.sendMessage({
+          body: `👋 Welcome ${userName}!\nYou're now a member of "${groupName}".\n🎉 Member count: ${memberCount}\n⚠️ (Image failed to load)`
+        }, threadID);
+      }
     }
+  } catch (err) {
+    console.error("❌ Error processing join event:", err.message);
+    await api.sendMessage("❌ Error handling welcome event.", threadID);
   }
 };
 
