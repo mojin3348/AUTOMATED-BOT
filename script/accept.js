@@ -1,9 +1,4 @@
-const axios = require("axios");
 const moment = require("moment-timezone");
-const fs = require("fs");
-
-// Load Facebook session cookie from config file
-const fbConfig = JSON.parse(fs.readFileSync(__dirname + "/../config/fb.config.json", "utf8")); // adjust path if needed
 
 let autoAccept = true;
 
@@ -11,7 +6,7 @@ module.exports.config = {
   name: "accept",
   version: "1.0.0",
   hasPermssion: 2,
-  credits: "ARI • Converted & Cookie-secured by AJ Chicano",
+  credits: "ARI • Fixed & Converted by AJ Chicano",
   description: "Auto-accepts pending friend requests on the bot account",
   commandCategory: "admin",
   usages: "[on/off]",
@@ -47,7 +42,6 @@ module.exports.run = async function ({ api, event, args }) {
 
     const headers = {
       "Content-Type": "application/x-www-form-urlencoded",
-      "Cookie": fbConfig.cookie
     };
 
     const response = await axios.post(
