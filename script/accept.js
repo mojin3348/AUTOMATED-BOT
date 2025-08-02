@@ -1,13 +1,11 @@
-const axios = require("axios");
-
 let autoAccept = true;
 
 module.exports.config = {
   name: "accept",
   version: "1.0.0",
   hasPermission: 2,
-  credits: "ChatGPT • Modified by AJ Chicano",
-  description: "Auto accept pending friend requests",
+  credits: "ARI • Fixed by AJ Chicano",
+  description: "Auto-accept friend requests on message receive",
   commandCategory: "admin",
   usages: "[on/off]",
   cooldowns: 5,
@@ -18,7 +16,7 @@ module.exports.run = async function ({ api, event, args }) {
 
   if (input === "on") {
     autoAccept = true;
-    return api.sendMessage("✅ Auto accept is now ON. The bot will accept friend requests automatically.", event.threadID);
+    return api.sendMessage("✅ Auto accept is now ON. The bot will accept friend requests when someone messages.", event.threadID);
   } else if (input === "off") {
     autoAccept = false;
     return api.sendMessage("❌ Auto accept is now OFF.", event.threadID);
@@ -27,18 +25,20 @@ module.exports.run = async function ({ api, event, args }) {
   }
 };
 
-module.exports.handleEvent = async function ({ api }) {
+// Trigger on any message sent to bot (PM or GC)
+module.exports.handleEvent = async function ({ api, event }) {
   if (!autoAccept) return;
+  if (event.isGroup) return; 
 
   try {
-    const friends = await api.getFriendsList();
-    const pending = friends.filter(f => f.isFriend === false);
+    const userInfo = await api.getUserInfo(event.senderID);
+    const user = userInfo[event.senderID];
 
-    for (const user of pending) {
-      await api.acceptFriendRequest(user.userID);
-      console.log(`🤝 Accepted: ${user.fullName}`);
+    if (!user.isFriend) {
+      await api.acceptFriendRequest(event.senderID);
+      console.log(`🤝 Accepted friend request from ${user.name}`);
     }
-  } catch (error) {
-    console.error("❌ Error while accepting friend requests:", error);
+  } catch (err) {
+    console.error("❌ Failed to accept friend request:", err);
   }
 };
