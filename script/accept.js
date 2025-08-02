@@ -4,41 +4,44 @@ module.exports.config = {
   name: "accept",
   version: "1.0.0",
   hasPermission: 2,
-  credits: "ARI • Fixed by AJ Chicano",
-  description: "Auto-accept friend requests on message receive",
+  credits: "Fixed by ARI • AJ",
+  description: "Toggle auto-accept of friend requests",
   commandCategory: "admin",
   usages: "[on/off]",
-  cooldowns: 5,
+  cooldowns: 5
 };
 
 module.exports.run = async function ({ api, event, args }) {
-  const input = args[0];
+  const input = args[0]?.toLowerCase();
 
   if (input === "on") {
     autoAccept = true;
-    return api.sendMessage("✅ Auto accept is now ON. The bot will accept friend requests when someone messages.", event.threadID);
+    return api.sendMessage("✅ Auto-accept friend request is now ON.", event.threadID);
   } else if (input === "off") {
     autoAccept = false;
-    return api.sendMessage("❌ Auto accept is now OFF.", event.threadID);
+    return api.sendMessage("❌ Auto-accept is now OFF.", event.threadID);
   } else {
     return api.sendMessage("❓ Usage: accept [on/off]", event.threadID);
   }
 };
 
-// Trigger on any message sent to bot (PM or GC)
 module.exports.handleEvent = async function ({ api, event }) {
   if (!autoAccept) return;
-  if (event.isGroup) return; 
+  if (!event.logMessageType || event.logMessageType !== "log:subscribe") return;
 
   try {
-    const userInfo = await api.getUserInfo(event.senderID);
-    const user = userInfo[event.senderID];
+    const addedParticipants = event.logMessageData.addedParticipants;
+    for (const participant of addedParticipants) {
+      const userID = participant.userFbId;
 
-    if (!user.isFriend) {
-      await api.acceptFriendRequest(event.senderID);
-      console.log(`🤝 Accepted friend request from ${user.name}`);
+      // Check if the user is the bot itself
+      if (userID === api.getCurrentUserID()) continue;
+
+      // Accept friend request (if user recently sent one)
+      await api.changeFriendStatus(userID, true);
+      console.log(`🤝 Friend request accepted: ${userID}`);
     }
   } catch (err) {
-    console.error("❌ Failed to accept friend request:", err);
+    console.error("❌ Error while auto-accepting friend request:", err);
   }
 };
