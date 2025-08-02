@@ -26,7 +26,7 @@ module.exports.handleEvent = async function ({ api, event }) {
       const background = "https://i.imgur.com/Ir3xU9A.jpg"; // You can customize this background
 
       // Build API link
-      const imageURL = `https://hershey-api.onrender.com/api/welcome?username=${encodeURIComponent(name)}&avatarUrl=https://api-canvass.vercel.app/profile?uid=${senderID}&groupname=${encodeURIComponent(groupName)}&bg=${encodeURIComponent(background)}&memberCount=${memberCount}`;
+      const imageURL = ``;
       const filePath = path.join(__dirname, "cache", `welcome_${userID}.jpg`);
 
       try {
